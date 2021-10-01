@@ -17,8 +17,8 @@ Connecting to the API:
 
 (Make sure Joplin is running and the Web Clipper API is active. You can find the API key in Joplin's options.)
 ```python
-from python_joplin import python_joplin
-my_jop = python_joplin.Joplin(key='myJoplinToken1a2b3c4...') 
+from python_joplin import Joplin
+my_jop = Joplin(key='myJoplinToken1a2b3c4...') 
 ```
 
 ## Examples
@@ -78,11 +78,11 @@ my_note.delete()
 # Getting help
 The code is documented, the ```help``` command should provide you with plenty of information:
 ```python
-help(python_joplin.Joplin)
-help(python_joplin.Joplin.Note)
-help(python_joplin.Joplin.Tag)
-help(python_joplin.Joplin.Notebook)
-help(python_joplin.Joplin.Ressource)
+help(Joplin)
+help(Joplin.Note)
+help(Joplin.Tag)
+help(Joplin.Notebook)
+help(Joplin.Ressource)
 ```
 
 # Contributing
