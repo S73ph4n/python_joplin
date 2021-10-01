@@ -11,6 +11,7 @@ But if you must :
 # Usage
 
 Connecting to the API:
+
 (Make sure Joplin is running and the Web Clipper API is active. You can find the API key in Joplin's options.)
 ```python
 from python_joplin import python_joplin
@@ -19,17 +20,35 @@ my_jop = python_joplin.Joplin(key='myJoplinToken1a2b3c4...')
 
 ## Examples
 
+Printing a list of all notes:
+```python
+note_list = my_jop.get_notes()
+for note in note_list: print(note.title)
+```
+
+Printing a list of all notebooks:
+```python
+notebooks_list = my_jop.get_notebooks()
+for notebook in notebooks_list: print(notebook.title)
+```
+
+Printing a list of all notes in a notebook:
+```python
+my_notebook = my_jop.get_notebooks()[0] #take the first notebook
+print(my_notebook.title)
+note_list = my_notebook.get_notes()
+for note in note_list: print(note.title)
+```
+
 Reading a note's properties:
 ```python
 my_note = my_jop.get_note('myNoteIDa1a2b3c4...')
 print('Title:', my_note.title)
 print('Body:', my_note.body)
 print('Tags:')
-for tag in my_note.tags:
-	print(tag.title)
+for tag in my_note.tags: print(tag.title)
 print('Ressources:')
-for ressource in my_note.ressources:
-	print(ressource.title)
+for ressource in my_note.ressources: print(ressource.title)
 ```
 
 Creating a note:
@@ -50,7 +69,7 @@ my_note.push() #Push your updates to Joplin
 Deleting a note:
 ```python
 my_note = my_jop.get_note('myNoteIDa1a2b3c4...')
-my_note.delete()'
+my_note.delete()
 ```
 
 # Getting help
