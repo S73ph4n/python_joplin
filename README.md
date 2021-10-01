@@ -8,6 +8,9 @@ That's a bad idea.
 But if you must :
 ```pip install git+https://github.com/S73ph4n/python_joplin```
 
+To uninstall:
+```pip uninstall python_joplin```
+
 # Usage
 
 Connecting to the API:
