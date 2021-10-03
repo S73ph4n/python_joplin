@@ -18,7 +18,7 @@ Connecting to the API:
 (Make sure Joplin is running and the Web Clipper API is active. You can find the API key in Joplin's options.)
 ```python
 from python_joplin import Joplin
-my_jop = Joplin(key='myJoplinToken1a2b3c4...') 
+my_jop = Joplin(key='myJoplinToken1a2b3c4...', auto_push=True) 
 ```
 
 ## Examples
@@ -59,14 +59,12 @@ Creating a note:
 my_note = my_jop.new_note()
 my_note.title = 'My New Note'
 my_note.body = 'The note\'s body'
-my_note.push() #Push your updates to Joplin
 ```
 
 Updating an existing note:
 ```python
 my_note = my_jop.get_note('myNoteIDa1a2b3c4...')
 my_note.body += 'The note\'s body'
-my_note.push() #Push your updates to Joplin
 ```
 
 Deleting a note:
