@@ -14,6 +14,10 @@ note_props = ['id', 'parent_id', 'title', 'body', 'created_time','updated_time',
 
 notebook_props = ['id', 'parent_id', 'title']
 
+ressource_props  = ['id', 'title', 'mime', 'filename', 'created_time', 'updated_time', 
+        'user_created_time', 'user_updated_time', 'file_extension', 'encryption_cipher_text', 
+        'encryption_applied', 'encryption_blob_encrypted', 'size', 'is_shared', 'share_id']
+
 class Joplin:
     def __init__(self, host='localhost', port=41184, key='', verbose=False, auto_push=False):
         """ Set the parameters we need to connect to the API.
@@ -147,8 +151,8 @@ class Joplin:
                     print('WARNING. Could not set parent_notebook for note', self.id)
             else:
                 self.__setattr__('parent_notebook', None, push=False)
-            self.__setattr__('tags', self.get_tags(self.id), push=False)
-            self.__setattr__('ressources', self.get_ressources(self.id), push=False)
+            self.__setattr__('tags', self.get_tags(), push=False)
+            self.__setattr__('ressources', self.get_ressources(), push=False)
 
         def __setattr__(self, key, value, push=True):
             """Will only auto-push if Joplin.auto_push is True AND push is True."""
@@ -175,16 +179,16 @@ class Joplin:
             self.API.delete_item('notes', self.id)
 
 
-        def get_tags(self, id_note):
+        def get_tags(self):
             """ Get tags associated with a note.
             Returns a list of Joplin.Tag objects."""
-            tags_json = self.API.get_items('notes', id_note, subitem_type='tags')
+            tags_json = self.API.get_items('notes', self.id, subitem_type='tags')
             return([self.API.get_tag(t_j['id']) for t_j in tags_json])
 
-        def get_ressources(self, id_note):
+        def get_ressources(self):
             """ Get ressources associated with a note.
             Returns a list of Joplin.Ressource objects."""
-            ressources_json = self.API.get_items('notes', id_note, subitem_type='resources')
+            ressources_json = self.API.get_items('notes', self.id, subitem_type='resources')
             return([self.API.get_ressource(r_j['id']) for r_j in ressources_json])
 
     def get_notebook(self, id_notebook):
@@ -338,9 +342,9 @@ class Joplin:
         def __init__(self, jop_API, id_ressource):
             """ Get the ressource."""
             if id_ressource=='': raise Exception('Please provide the ressource\'s id.')
-            ressource_json = jop_API.get_item('resources', id_ressource, ['id', 'title'])
-            self.id = ressource_json['id']
-            self.title = ressource_json['title']
+            ressource_json = jop_API.get_item('resources', id_ressource, ressource_props)
+            for key in ressource_json.keys(): #set the attributes : 
+                self.__dict__[key] = ressource_json[key]
 
     def put_item(self, item_type, item_id, data):
         """ Update a item (note, folder, etc.) using Joplin's REST API.
