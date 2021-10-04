@@ -79,7 +79,7 @@ class Joplin:
         N.B. : item_type should be plural (notes/tags/folders/etc.)
         """
         page_n, items = 0, []
-        while page_n==0 or page_json['has_more']=='True':
+        while page_n==0 or page_json['has_more']:
             page_n += 1 
             page_json = self.get_item(item_type, item_id, fields=fields, subitem_type=subitem_type, page=page_n)
             for item in page_json['items']:
@@ -91,6 +91,24 @@ class Joplin:
         Returns a Joplin.Note object."""
         if id_note=='': raise Exception('Please provide the note\'s id.')
         return(self.Note(self, id_note))
+
+    def get_note_by_title(self, title, create_if_needed=False):
+        """Finds a note by its title.
+        If create_if_needed is True, will create it if it does not exist.
+        """
+        search_res = self.search_notes('title:"'+title+'"')
+        if len(search_res) > 1:
+            raise Exception('Several notes with that title.')
+        elif len(search_res)==0 and create_if_needed:
+            new_note = self.new_note()
+            new_note.__setattr__('title', title, push=False)
+            new_note.push()
+            return(new_note)
+        elif len(search_res)==1:
+            return(search_res[0])
+        else:
+            raise Exception('No note by that title.')
+
 
     def new_note(self):
         """Creates a note.
@@ -123,8 +141,10 @@ class Joplin:
                 self.__dict__[key] = note_json[key]
 
             if note_json['parent_id'] != '': 
-                self.__setattr__('parent_notebook', jop_API.get_notebook(note_json['parent_id']), push=False)
-
+                try:
+                    self.__setattr__('parent_notebook', jop_API.get_notebook(note_json['parent_id']), push=False)
+                except:
+                    print('WARNING. Could not set parent_notebook for note', self.id)
             else:
                 self.__setattr__('parent_notebook', None, push=False)
             self.__setattr__('tags', self.get_tags(self.id), push=False)
@@ -141,32 +161,6 @@ class Joplin:
             data={}
             for key in note_props:
                 data[key] = self.__dict__[key]
-            #data['id'] = self.id
-            #data['title'] = self.title
-            #data['body'] = self.body
-            #data['created_time'] = self.created_time
-            #data['updated_time'] = self.updated_time #TODO : update
-            #data['is_conflict'] = self.is_conflict
-            #data['latitude'] = self.latitude
-            #data['longitude'] = self.longitude
-            #data['altitude'] = self.altitude
-            #data['author'] = self.author
-            #data['source_url'] = self.source_url
-            #data['is_todo'] = self.is_todo
-            #data['todo_due'] = self.todo_due
-            #data['todo_completed'] = self.todo_completed
-            #data['source'] = self.source #TODO : set
-            #data['source_application'] = self.source_application #TODO : set
-            #data['application_data'] = self.application_data
-            #data['order'] = self.order
-            #data['created_time'] = self.user_created_time
-            #data['user_updated_time'] = self.user_updated_time 
-            #data['encryption_cipher_text'] = self.encryption_cipher_text
-            #data['encryption_applied'] = self.encryption_applied
-            #data['markup_language'] = self.markup_language
-            #data['is_shared'] = self.is_shared
-            #data['share_id'] = self.share_id
-            #data['conflict_original_id'] = self.conflict_original_id
 
             if self.parent_notebook is None:
                 data['parent_id'] = ''
@@ -198,6 +192,23 @@ class Joplin:
         Returns a Joplin.Notebook object."""
         if id_notebook=='': raise Exception('Please provide the notebooks\'s id.')
         return(self.Notebook(self, id_notebook))
+
+    def get_notebook_by_title(self, title, create_if_needed=False):
+        """Finds a notebook by its title.
+        If create_if_needed id True, will create it if it does not already exist.
+        """
+        search_res = self.search_notebooks(title)
+        if len(search_res) > 1:
+            raise Exception('Several notebooks with that title.')
+        elif len(search_res)==0 and create_if_needed:
+            new_notebook = self.new_notebook()
+            new_notebook.__setattr__('title', title, push=False)
+            new_notebook.push()
+            return(new_notebook)
+        elif len(search_res)==1:
+            return(search_res[0])
+        else:
+            raise Exception('No notebook by that title.')
 
     def new_notebook(self):
         """Creates a notebook.
@@ -260,6 +271,30 @@ class Joplin:
             Returns a list of Joplin.Note objects."""
             notes_json = self.API.get_items('folders', self.id, subitem_type='notes')
             return([self.API.get_note(n_j['id']) for n_j in notes_json])
+
+        def get_note_by_title(self, title, create_if_needed=False):
+            """Finds a note by its title within a notebook.
+            If create_if_needed is True, will create it if it does not exist.
+            """
+            search_res = self.API.search_notes('title:"'+title+'" notebook:"'+self.title+'"')
+            if len(search_res) > 1:
+                raise Exception('Several notes with that title in that notebook.')
+            elif len(search_res)==0 and create_if_needed:
+                new_note = self.new_note(title=title)
+                return(new_note)
+            elif len(search_res)==1:
+                return(search_res[0])
+            else:
+                raise Exception('No note by that title in that notebook.')
+
+        def new_note(self, title=''):
+            """Creates a note in that notebook.
+            Returns a Joplin.Note object."""
+            note = self.API.Note(self, '')
+            note.__setattr__('parent_notebook', self, push=False)
+            if title != '': note.__setattr__('title', title, push=False)
+            note.push()
+            return(note)
 
     def get_tag(self, id_tag):
         """Get a tag from its id.
