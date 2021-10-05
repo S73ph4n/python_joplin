@@ -54,7 +54,7 @@ def set_yaml(note, yaml_object):
         if body[i].startswith(key):
             i0 = i
             while i+1<len(body) and (body[i+1].startswith(' ') or body[i+1].startswith('\t')):
-                    yaml_content += '\n'+body[i+1]
+                    yaml_content += '\n'+body[i+1].replace('\t', '    ')# YAML doesn't like tabs
                     i += 1
             i1 = i
             break

@@ -294,7 +294,7 @@ class Joplin:
         def new_note(self, title=''):
             """Creates a note in that notebook.
             Returns a Joplin.Note object."""
-            note = self.API.Note(self, '')
+            note = self.API.Note(self.API, '')
             note.__setattr__('parent_notebook', self, push=False)
             if title != '': note.__setattr__('title', title, push=False)
             note.push()
