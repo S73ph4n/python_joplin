@@ -46,7 +46,11 @@ class Joplin:
         if self.verbose: print('GET ', url)
         r = requests.get(url)
         if self.verbose: print('HTTP', r.status_code)
-        if r.status_code != 200: raise Exception('Could not connect to API. Please check that the host/port/key is correct.')
+        if r.status_code != 200: 
+            if self.verbose: 
+                print(r.headers)
+                print(r.text)
+            raise Exception('Could not connect to API. Please check that the host/port/key is correct.')
         #if self.verbose: print(r.json())
         if self.verbose: print('Connection OK')
         return(r)
@@ -74,7 +78,11 @@ class Joplin:
         r = requests.get(url)
         if self.verbose: print('HTTP', r.status_code)
         if r.status_code == 404: raise Exception('Item not found. Please check the id you provided.')
-        if r.status_code != 200: raise Exception('Could not connect to API. Please check that the host/port/key is correct.')
+        if r.status_code != 200: 
+            if self.verbose: 
+                print(r.headers)
+                print(r.text)
+            raise Exception('Could not connect to API. Please check that the host/port/key is correct.')
         return(r.json())
 
     def get_items(self, item_type, item_id='', fields='', subitem_type=''):
@@ -401,7 +409,11 @@ class Joplin:
         r = requests.put(url, json.dumps(data))
         if self.verbose: print('HTTP', r.status_code)
         if r.status_code == 404: raise Exception('Item not found. Please check the id you provided.')
-        if r.status_code != 200: raise Exception('Could not connect to API. Please check that the host/port/key is correct.')
+        if r.status_code != 200: 
+            if self.verbose: 
+                print(r.headers)
+                print(r.text)
+            raise Exception('Could not connect to API. Please check that the host/port/key is correct.')
         return(r.json())
 
     def post_item(self, item_type, data={'title':'Untitled', 'parent_id':'', 'source':'python_joplin', 'source_application':'com.S73ph4n.python_joplin'}, file=None):
@@ -417,10 +429,8 @@ class Joplin:
 
         if self.verbose: print('POST ', url, '\nwith data :', data)
         if item_type == 'resources':
+            #TODO : set the type of ressource
             r = requests.post(url, files=dict({'props':(None,json.dumps(data)),'data':file}))
-            #r = requests.post(url, files=dict({'props':(None,"{\"title\":\"TestRessource\"}"),'data':file}))
-            print(r.request.headers)
-            print(r.request.body)
         else:
             r = requests.post(url, json.dumps(data))
         if self.verbose: print('HTTP', r.status_code)
@@ -446,7 +456,11 @@ class Joplin:
         r = requests.delete(url)
         if self.verbose: print('HTTP', r.status_code)
         if r.status_code == 404: raise Exception('Item not found. Please check the id you provided.')
-        if r.status_code != 200: raise Exception('Could not connect to API. Please check that the host/port/key is correct.')
+        if r.status_code != 200: 
+            if self.verbose: 
+                print(r.headers)
+                print(r.text)
+            raise Exception('Could not connect to API. Please check that the host/port/key is correct.')
         return(r.text)
 
     def search_item(self, search_string, item_type='', page=1):
@@ -465,7 +479,11 @@ class Joplin:
         r = requests.get(url)
         if self.verbose: print('HTTP', r.status_code)
         if r.status_code == 404: raise Exception('Item not found. Please check the id you provided.')
-        if r.status_code != 200: raise Exception('Could not connect to API. Please check that the host/port/key is correct.')
+        if r.status_code != 200: 
+            if self.verbose: 
+                print(r.headers)
+                print(r.text)
+            raise Exception('Could not connect to API. Please check that the host/port/key is correct.')
         return(r.json())
 
     def search_items(self, search_string, item_type=''):
