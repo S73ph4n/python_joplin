@@ -19,7 +19,7 @@ ressource_props  = ['id', 'title', 'mime', 'filename', 'created_time', 'updated_
         'encryption_applied', 'encryption_blob_encrypted', 'size', 'is_shared', 'share_id']
 
 class Joplin:
-    def __init__(self, host='localhost', port=41184, key='', verbose=False, auto_push=False):
+    def __init__(self, key, host='localhost', port=41184, verbose=False, auto_push=False):
         """ Set the parameters we need to connect to the API.
         Params:
             * verbose : prints what is being done. For debug purposes.
@@ -346,9 +346,16 @@ class Joplin:
         id_ress = self.post_item('resources', data={'title':title}, file=file)
         return(self.Ressource(self, id_ress))
 
+    def get_ressources(self):
+        """ Get all ressources.
+        Returns a list of Joplin.Ressource objects."""
+        ressources_json = self.get_items('resources')
+        return([self.get_ressource(r_j['id']) for r_j in ressources_json])
+
     class Ressource:
         def __init__(self, jop_API, id_ressource):
             """ Get the ressource."""
+            self.API = jop_API
             if id_ressource=='': raise Exception('Please provide the ressource\'s id.')
             ressource_json = jop_API.get_item('resources', id_ressource, ressource_props)
             for key in ressource_json.keys(): #set the attributes : 
@@ -371,6 +378,12 @@ class Joplin:
 
             self.API.put_item('resources', self.id, data) 
             if self.API.verbose: print('Updated ressource', self.id)
+
+        def get_notes(self):
+            """ Get a list of all notes associated with that ressource.
+            Returns a list of Joplin.Note objects."""
+            notes_json = self.API.get_items('resources', self.id, subitem_type='notes')
+            return([self.API.get_note(n_j['id']) for n_j in notes_json])
 
     def put_item(self, item_type, item_id, data):
         """ Update a item (note, folder, etc.) using Joplin's REST API.
