@@ -422,6 +422,7 @@ class Joplin:
             * To create a note : put_item('notes')
         Returns the id of the new item.
         """
+        #TODO : add removal of forbidden characters
         #Make base url :
         url = 'http://'+self.API_host+':'+str(self.API_port)+'/'+item_type
         #Append parameters :
@@ -467,6 +468,7 @@ class Joplin:
         """
         N.B. : item_type should be singular (note/tag/folder/etc.)
         """
+        #TODO : add removal of forbidden characters
         #Make base url :
         url = 'http://'+self.API_host+':'+str(self.API_port)+'/search'
         #Append parameters :

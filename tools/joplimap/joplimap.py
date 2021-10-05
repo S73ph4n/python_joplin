@@ -6,6 +6,12 @@ confirm=False #ask before creating each note/ressource
 # Environment variables we need:
 ENV = {'JOPLIN_TOKEN':'', 'IMAP_SERVER':'', 'IMAP_USER':'', 'IMAP_PASSWORD':''} 
 
+def format_str(raw):
+    forbidden_chars = ['\n', '\r', '#', '\\', '\'', '\"']
+    return(''.join([c for c in raw if not c in forbidden_chars]))
+    #return(''.join([c for c in raw if c.isalnum() or c.isspace()]))
+    #return(''.join([c for c in raw if c.isprintable()]))
+
 # In case the environment variables are not set, let's set them :
 for VAR_NAME in ENV.keys():
     ENV[VAR_NAME] = os.getenv(VAR_NAME)
@@ -14,7 +20,7 @@ for VAR_NAME in ENV.keys():
 
 #Prepare Joplin:
 click.echo('Connecting to Joplin...')
-jop = python_joplin.Joplin(ENV['JOPLIN_TOKEN'], auto_push=False, verbose=True) #Connect to the Joplin API
+jop = python_joplin.Joplin(ENV['JOPLIN_TOKEN']) #Connect to the Joplin API
 inbox_notebook = jop.get_notebook_by_title('IMAP_Inbox', create_if_needed=True) #get the Joplin notebook we need
 click.echo('Joplin connection OK')
 
@@ -29,9 +35,7 @@ click.echo('Messages fetched.')
 # ( See https://pypi.org/project/imap-tools/#email-attributes )
 for msg in messages:
     if not confirm or click.confirm('Add message '+msg.subject+' ?', default=False):
-        title = msg.date_str + ' : ' + msg.subject + ' [' + msg.from_  + ']' #the title for our note
-        title = title.replace('\r', ' ').replace('\n', ' ')# clean the note title
-        print(title)
+        title = msg.date_str + ' : ' + format_str(msg.subject) + ' [' + msg.from_  + ']' #the title for our note
         note = inbox_notebook.get_note_by_title(title, create_if_needed=True) # Create note in notebook (or find it if it exists)
         if note.body != '': continue #if there's already something, let's not change it
         note.body = markdownify.markdownify(msg.html, heading_style='ATX')

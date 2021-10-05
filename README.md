@@ -3,6 +3,8 @@ A package to handle the Joplin API with Python. Relies on the [Joplin Data API](
 
 WARNING : This is a work in progress. There will probably be a few breaking changes in the future, so please don't use it in production. This code comes without any warranties or support.
 
+Additionnal tools can be found in the 'tools' directory.
+
 # Installation
 That's a bad idea.
 But if you must :
