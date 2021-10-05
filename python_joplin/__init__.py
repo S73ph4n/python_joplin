@@ -338,6 +338,14 @@ class Joplin:
         ressources_json = self.search_items(search_string, item_type='resource')
         return([self.get_ressource(r_j['id']) for r_j in ressources_json])
 
+    def new_ressource(self, title, file):
+        """
+        * title : the Ressource's title
+        * file : a file object (ex. : file=open('test.pdf', rb))
+        """
+        id_ress = self.post_item('resources', data={'title':title}, file=file)
+        return(self.Ressource(self, id_ress))
+
     class Ressource:
         def __init__(self, jop_API, id_ressource):
             """ Get the ressource."""
@@ -345,6 +353,24 @@ class Joplin:
             ressource_json = jop_API.get_item('resources', id_ressource, ressource_props)
             for key in ressource_json.keys(): #set the attributes : 
                 self.__dict__[key] = ressource_json[key]
+
+        def __setattr__(self, key, value, push=True):
+            """Will only auto-push if Joplin.auto_push is True AND push is True."""
+            self.__dict__[key] = value
+            if push and self.API.auto_push and key in ressource_props: self.push()
+
+        def delete(self):
+            """Deletes the ressource."""
+            self.API.delete_item('resources', self.id)
+
+        def push(self):
+            """Pushes the ressource update(s) to the Joplin API."""
+            data={}
+            for key in ressource_props:
+                data[key] = self.__dict__[key]
+
+            self.API.put_item('resources', self.id, data) 
+            if self.API.verbose: print('Updated ressource', self.id)
 
     def put_item(self, item_type, item_id, data):
         """ Update a item (note, folder, etc.) using Joplin's REST API.
@@ -365,7 +391,7 @@ class Joplin:
         if r.status_code != 200: raise Exception('Could not connect to API. Please check that the host/port/key is correct.')
         return(r.json())
 
-    def post_item(self, item_type, data={'parent_id':'', 'source':'python_joplin', 'source_application':'com.S73ph4n.python_joplin'}):
+    def post_item(self, item_type, data={'title':'Untitled', 'parent_id':'', 'source':'python_joplin', 'source_application':'com.S73ph4n.python_joplin'}, file=None):
         """ Creates an item (note, folder, etc.) using Joplin's REST API.
         Ex.: 
             * To create a note : put_item('notes')
@@ -377,10 +403,20 @@ class Joplin:
         url += '?token='+self.API_key
 
         if self.verbose: print('POST ', url, '\nwith data :', data)
-        r = requests.post(url, json.dumps(data))
+        if item_type == 'resources':
+            r = requests.post(url, files=dict({'props':(None,json.dumps(data)),'data':file}))
+            #r = requests.post(url, files=dict({'props':(None,"{\"title\":\"TestRessource\"}"),'data':file}))
+            print(r.request.headers)
+            print(r.request.body)
+        else:
+            r = requests.post(url, json.dumps(data))
         if self.verbose: print('HTTP', r.status_code)
         if r.status_code == 404: raise Exception('Item not found. Please check the id you provided.')
-        if r.status_code != 200: raise Exception('Could not connect to API. Please check that the host/port/key is correct.')
+        if r.status_code != 200: 
+            if self.verbose: 
+                print(r.headers)
+                print(r.text)
+            raise Exception('Could not connect to API. Please check that the host/port/key is correct.')
         return(r.json()['id'])
 
     def delete_item(self, item_type, item_id):
