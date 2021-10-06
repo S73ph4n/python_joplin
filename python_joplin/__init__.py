@@ -147,7 +147,17 @@ class Joplin:
             if id_note=='': 
                 id_note=jop_API.post_item('notes')
                 if jop_API.verbose: print('No id provided, new note created with id', id_note)
-            note_json = jop_API.get_item('notes', id_note, note_props)
+            self.id = id_note
+            self.pull()
+
+        def __setattr__(self, key, value, push=True):
+            """Will only auto-push if Joplin.auto_push is True AND push is True."""
+            self.__dict__[key] = value
+            if push and self.API.auto_push and key in note_props: self.push()
+
+        def pull(self):
+            """Pulls the notes update(s) from the Joplin API."""
+            note_json = self.API.get_item('notes', self.id, note_props)
                     
             for key in note_json.keys(): #set the attributes : 
                 self.__dict__[key] = note_json[key]
@@ -161,11 +171,7 @@ class Joplin:
                 self.__setattr__('parent_notebook', None, push=False)
             self.__setattr__('tags', self.get_tags(), push=False)
             self.__setattr__('ressources', self.get_ressources(), push=False)
-
-        def __setattr__(self, key, value, push=True):
-            """Will only auto-push if Joplin.auto_push is True AND push is True."""
-            self.__dict__[key] = value
-            if push and self.API.auto_push and key in note_props: self.push()
+            if self.API.verbose: print('Updated note', self.id)
 
         def push(self):
             """Pushes the notes update(s) to the Joplin API."""
@@ -247,9 +253,17 @@ class Joplin:
             if id_notebook=='': 
                 id_notebook=jop_API.post_item('folders')
                 if jop_API.verbose: print('No id provided, new notebook created with id', id_notebook)
-            #notebook_json = jop_API.get_item('folders', id_notebook, ['id', 'parent_id', 'title'])
-            notebook_json = jop_API.get_item('folders', id_notebook, notebook_props)
-                    
+            self.id = id_notebook
+            self.pull()
+
+        def __setattr__(self, key, value, push=True):
+            """Will only auto-push if Joplin.auto_push is True AND push is True."""
+            self.__dict__[key] = value
+            if push and key in notebook_props and self.API.auto_push : self.push()
+
+        def pull(self):
+            """Pulls the notebook's update(s) from the Joplin API."""
+            notebook_json = self.API.get_item('folders', self.id, notebook_props)
             for key in notebook_json.keys(): #set the attributes : 
                 self.__dict__[key] = notebook_json[key]
             if notebook_json['parent_id'] != '': 
@@ -257,16 +271,11 @@ class Joplin:
             else:
                 self.__setattr__('parent_notebook', None, push=False)
 
-        def __setattr__(self, key, value, push=True):
-            """Will only auto-push if Joplin.auto_push is True AND push is True."""
-            self.__dict__[key] = value
-            if push and key in notebook_props and self.API.auto_push : self.push()
-
         def push(self):
-            """Pushes the notes update(s) to the Joplin API."""
+            """Pushes the notebook's update(s) to the Joplin API."""
             data={}
-            data['id'] = self.id
-            data['title'] = self.title
+            for key in notebook_props:
+                data[key] = self.__dict__[key]
             if self.parent_notebook is None:
                 data['parent_id'] = ''
             else:
@@ -365,9 +374,8 @@ class Joplin:
             """ Get the ressource."""
             self.API = jop_API
             if id_ressource=='': raise Exception('Please provide the ressource\'s id.')
-            ressource_json = jop_API.get_item('resources', id_ressource, ressource_props)
-            for key in ressource_json.keys(): #set the attributes : 
-                self.__dict__[key] = ressource_json[key]
+            self.id = id_ressource
+            self.pull()
 
         def __setattr__(self, key, value, push=True):
             """Will only auto-push if Joplin.auto_push is True AND push is True."""
@@ -377,6 +385,12 @@ class Joplin:
         def delete(self):
             """Deletes the ressource."""
             self.API.delete_item('resources', self.id)
+
+        def pull(self):
+            """Pulls the ressource's update(s) from the Joplin API."""
+            ressource_json = self.API.get_item('resources', self.id, ressource_props)
+            for key in ressource_json.keys(): #set the attributes : 
+                self.__dict__[key] = ressource_json[key]
 
         def push(self):
             """Pushes the ressource update(s) to the Joplin API."""
