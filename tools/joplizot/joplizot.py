@@ -1,16 +1,20 @@
-import os, click, python_joplin, time
-from python_joplin import tools
+"""JoplIMAP.py : a script to fetch your email and continuously import it to Joplin."""
+import os
+import time
+import click
 from pyzotero import zotero
+import python_joplin
+from python_joplin import tools
 
-confirm = False  # ask before creating each note/ressource
-loop = True
-wait_time = 60  # wait 60 seconds between each runs
+CONFIRM = False  # ask before creating each note/ressource
+LOOP = True
+WAIT_TIME = 60  # wait 60 seconds between each runs
 
 # Environment variables we need:
 ENV = {"JOPLIN_TOKEN": "", "ZOTERO_LIBRARY_ID": "", "ZOTERO_API_KEY": ""}
 
-
 def format_str(raw):
+    """Format a string so it doesn't break the Joplin API calls (happens with some characters)."""
     forbidden_chars = ["\n", "\r", "#", "\\", "'", '"']
     return "".join([c for c in raw if not c in forbidden_chars])
     # return(''.join([c for c in raw if c.isalnum() or c.isspace()]))
@@ -44,12 +48,11 @@ while True:
     # Process the items:
     click.echo("Processing items...")
     for item in items:
-        if not confirm or click.confirm(
+        if not CONFIRM or click.confirm(
             "Add item " + item["data"]["title"] + " ?", default=False
         ):
             title = format_str(item["data"]["title"])  # the title for our note
             click.echo("Adding/updating item:" + title)
-            # title = msg.date_str + ' : ' + format_str(msg.subject) + ' [' + msg.from_  + ']' #the title for our note
             note = zot_notebook.get_note_by_title(
                 title, create_if_needed=True
             )  # Create note in notebook (or find it if it exists)
@@ -63,12 +66,14 @@ while True:
                 tools.set_yaml(note, prop_name, item["data"][prop_name])
             # TODO : add attachments
             # for att in msg.attachments:
-            #    if not confirm or click.confirm('\tAdd attachment '+att.filename+' ?', default=True):
+            #    if not CONFIRM or click.confirm(
+            #        '\tAdd attachment '+att.filename+' ?', default=True
+            #    ):
             #        att_jop = jop.new_ressource(att.filename, att.payload)
             #        note.body += '['+att_jop.title+'](:/'+att_jop.id+')'
             note.source = "Zotero via JopliZot"
             note.push()  # Push updates to Joplin
-    if not loop:
+    if not LOOP:
         break
-    click.echo("Done. Waiting " + str(wait_time) + " secs before next run...")
-    time.sleep(wait_time)
+    click.echo("Done. Waiting " + str(WAIT_TIME) + " secs before next run...")
+    time.sleep(WAIT_TIME)
