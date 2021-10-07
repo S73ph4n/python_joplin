@@ -41,12 +41,10 @@ while True:
             title = format_str(item['data']['title']) #the title for our note
             #title = msg.date_str + ' : ' + format_str(msg.subject) + ' [' + msg.from_  + ']' #the title for our note
             note = zot_notebook.get_note_by_title(title, create_if_needed=True) # Create note in notebook (or find it if it exists)
-            if note.body != '': continue #if there's already something, let's not change it
-            for prop_name in item['links'].keys():
-                note.body += '['+prop_name+'](:/'+ item['links'][prop_name]['href'] +')' +'\n'
+            #if note.body != '': continue #if there's already something, let's not change it
+            tools.set_yaml(note, 'Link', '[See on Zotero Web]('+ item['links']['alternate']['href'] +')')
             for prop_name in item['data'].keys():
                 tools.set_yaml(note, prop_name, item['data'][prop_name])
-
             #TODO : add attachments
             #for att in msg.attachments: 
             #    if not confirm or click.confirm('\tAdd attachment '+att.filename+' ?', default=True):
