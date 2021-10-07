@@ -50,6 +50,6 @@ while True:
             note.push() #Push updates to Joplin
     if not loop:
         break
-    click.echo('Done. Waiting',wait_time,'sec before next run...')
+    click.echo('Done. Waiting '+str(wait_time)+' secs before next run...')
     time.sleep(wait_time)
 

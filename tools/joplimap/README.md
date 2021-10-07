@@ -25,10 +25,10 @@ services:
   joplimap:
     build: ~/src/python_joplin/tools/joplimap
     environment:
-      - JOPLIN_TOKEN="myJoplinToken1a2b3c..."
-      - IMAP_SERVER="imap.myserver.com"
-      - IMAP_USER="testuser"
-      - IMAP_PASSWORD="testpassword"
+      - JOPLIN_TOKEN=myJoplinToken1a2b3c...
+      - IMAP_SERVER=imap.myserver.com
+      - IMAP_USER=testuser
+      - IMAP_PASSWORD=testpassword
     network_mode: host
 ```
 
