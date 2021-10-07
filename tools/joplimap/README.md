@@ -1,4 +1,4 @@
-# JoplIMAP
+# JoplIMAP.py
 Sync your IMAP Inbox with Joplin.
 
 ## Usage
@@ -12,7 +12,7 @@ Run the script:
 python joplimap.py
 ```
 
-## With Docker
+## With Docker (recommended)
 ```sh
 docker build -t joplimap https://github.com/S73ph4n/python_joplin.git\#:tools/joplimap
 docker run -it --network host -e JOPLIN_TOKEN="myJoplinToken1a2b3c..." -e IMAP_SERVER="imap.myserver.com" -e IMAP_USER="username" -e IMAP_PASSWORD="password" joplimap
