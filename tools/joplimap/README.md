@@ -27,8 +27,8 @@ services:
     environment:
       - JOPLIN_TOKEN="myJoplinToken1a2b3c..."
       - IMAP_SERVER="imap.myserver.com"
-      - IMAP_USER="stephanpissot@gmail.com"
-      - IMAP_PASSWORD="huixuyeycjixcqfc"
+      - IMAP_USER="testuser"
+      - IMAP_PASSWORD="testpassword"
     network_mode: host
 ```
 
