@@ -1,4 +1,3 @@
 git+https://github.com/S73ph4n/python_joplin
 click
-imap_tools
-markdownify
+pyzotero

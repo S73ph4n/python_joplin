@@ -1,4 +1,5 @@
 import os, click, python_joplin
+from python_joplin import tools
 from pyzotero import zotero
 
 confirm=True #ask before creating each note/ressource
@@ -25,7 +26,7 @@ zot_notebook = jop.get_notebook_by_title('Zotero_Items', create_if_needed=True) 
 click.echo('Joplin connection OK')
 
 #Prepare PyZotero:
-click.echo('Connecting to IMAP server...')
+click.echo('Connecting to Zotero server...')
 zot = zotero.Zotero(ENV['ZOTERO_LIBRARY_ID'], 'user', ENV['ZOTERO_API_KEY'])
 click.echo('Zotero connection OK.\nFetching items...')
 items = zot.top(limit=50)
@@ -36,10 +37,10 @@ for item in items:
     if not confirm or click.confirm('Add item '+item['data']['title']+' ?', default=False):
         title = format_str(item['data']['title']) #the title for our note
         #title = msg.date_str + ' : ' + format_str(msg.subject) + ' [' + msg.from_  + ']' #the title for our note
-        note = inbox_notebook.get_note_by_title(title, create_if_needed=True) # Create note in notebook (or find it if it exists)
+        note = zot_notebook.get_note_by_title(title, create_if_needed=True) # Create note in notebook (or find it if it exists)
         if note.body != '': continue #if there's already something, let's not change it
         for prop_name in item['data'].keys():
-            python_joplin.tools.set_yaml(note, prop_name, item['data'][prop_name])
+            tools.set_yaml(note, prop_name, item['data'][prop_name])
 
         #TODO : add attachments
         #for att in msg.attachments: 
