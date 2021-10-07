@@ -164,9 +164,9 @@ class Joplin:
 
             if note_json['parent_id'] != '': 
                 try:
-                    self.__setattr__('parent_notebook', jop_API.get_notebook(note_json['parent_id']), push=False)
+                    self.__setattr__('parent_notebook', self.API.get_notebook(note_json['parent_id']), push=False)
                 except:
-                    print('WARNING. Could not set parent_notebook for note', self.id)
+                    print('WARNING. Could not set parent_notebook to',note_json['parent_id'],'for note', self.id)
             else:
                 self.__setattr__('parent_notebook', None, push=False)
             self.__setattr__('tags', self.get_tags(), push=False)
@@ -204,6 +204,13 @@ class Joplin:
             Returns a list of Joplin.Ressource objects."""
             ressources_json = self.API.get_items('notes', self.id, subitem_type='resources')
             return([self.API.get_ressource(r_j['id']) for r_j in ressources_json])
+
+        def new_ressource(self, title, file):
+            """Creates a new ressource and appends a link to the note's body."""
+            att = self.API.new_ressource(title, file)
+            self.body += '['+att.title+'](:/'+att.id+')'
+            return(att.id)
+
 
     def get_notebook(self, id_notebook):
         """Get a notebook from its id.
@@ -267,7 +274,7 @@ class Joplin:
             for key in notebook_json.keys(): #set the attributes : 
                 self.__dict__[key] = notebook_json[key]
             if notebook_json['parent_id'] != '': 
-                self.__setattr__('parent_notebook', jop_API.get_notebook(notebook_json['parent_id']), push=False)
+                self.__setattr__('parent_notebook', self.API.get_notebook(notebook_json['parent_id']), push=False)
             else:
                 self.__setattr__('parent_notebook', None, push=False)
 

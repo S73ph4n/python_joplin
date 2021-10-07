@@ -34,32 +34,43 @@ def clean_ressources(jop_API, confirm=True):
 def get_yaml(note, key):
     """
     Find a YAML property in a note.
+    (Gets the first occurrence of a property.)
     """
     body = note.body.split('\n')
     i = 0
     while i<len(body):
         if body[i].startswith(key):
+            #print(i)
             yaml_content = body[i]
             while i+1<len(body) and (body[i+1].startswith(' ') or body[i+1].startswith('\t')):
                     yaml_content += '\n'+body[i+1]
                     i += 1
+            #print(i)
             return(yaml.safe_load(yaml_content)[key])
         i += 1
     return(None)
 
-def set_yaml(note, yaml_object):
+def set_yaml(note, key, value):
+    """
+    Set some YAML in a note.
+    (Changes all occurences of a property.)
+    """
     body = note.body.split('\n')
-    i = 0
+    dump = yaml.dump({key: value})
+    i, i0 = 0,  None
     while i<len(body):
         if body[i].startswith(key):
             i0 = i
             while i+1<len(body) and (body[i+1].startswith(' ') or body[i+1].startswith('\t')):
-                    yaml_content += '\n'+body[i+1].replace('\t', '    ')# YAML doesn't like tabs
                     i += 1
             i1 = i
-            break
+            body = '\n'.join(body[:i0]) + '\n' + dump + '\n'.join(body[i1+1:]) #concatenate with the YAML dump
+            body = body.split('\n')
+            i += len(dump.split('\n')) - 2
         i += 1
-    body = '\n'.join(body[:i0]), dump, '\n'.join(body[i1:])
-    note.body = '\n'.join(body)
+    if i0==None: #if we couldn't find it:
+        note.body = '\n'.join(body) + '\n' +  dump #append it at the end
+    else:
+        note.body = '\n'.join(body)
     note.push()
 
