@@ -36,9 +36,11 @@ while True:
     click.echo('Items fetched.')
 
     #Process the items:
+    click.echo('Processing items...')
     for item in items:
         if not confirm or click.confirm('Add item '+item['data']['title']+' ?', default=False):
             title = format_str(item['data']['title']) #the title for our note
+            click.echo('Adding/updating item:'+title)
             #title = msg.date_str + ' : ' + format_str(msg.subject) + ' [' + msg.from_  + ']' #the title for our note
             note = zot_notebook.get_note_by_title(title, create_if_needed=True) # Create note in notebook (or find it if it exists)
             #if note.body != '': continue #if there's already something, let's not change it
@@ -56,5 +58,3 @@ while True:
         break
     click.echo('Done. Waiting '+str(wait_time)+' secs before next run...')
     time.sleep(wait_time)
-
-
