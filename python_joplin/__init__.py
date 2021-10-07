@@ -12,11 +12,13 @@ note_props = ['id', 'parent_id', 'title', 'body', 'created_time','updated_time',
                         'user_updated_time', 'encryption_cipher_text', 'encryption_applied', 
                         'markup_language', 'is_shared', 'share_id', 'conflict_original_id']
 
-notebook_props = ['id', 'parent_id', 'title']
+notebook_props = ['id', 'parent_id', 'title', 'created_time', 'updated_time', 'user_created_time', 'user_updated_time', 'encryption_cipher_text', 'encryption_applied', 'parent_id', 'is_shared', 'share_id']
 
 ressource_props  = ['id', 'title', 'mime', 'filename', 'created_time', 'updated_time', 
         'user_created_time', 'user_updated_time', 'file_extension', 'encryption_cipher_text', 
         'encryption_applied', 'encryption_blob_encrypted', 'size', 'is_shared', 'share_id']
+
+tag_props = ['id', 'title', 'created_time', 'updated_time', 'user_created_time', 'user_updated_time', 'encryption_cipher_text', 'encryption_applied', 'is_shared', 'parent_id']
 
 class Joplin:
     def __init__(self, key, host='localhost', port=41184, verbose=False, auto_push=False):
@@ -140,6 +142,7 @@ class Joplin:
         return([self.get_note(n_j['id']) for n_j in notes_json])
 
     class Note:
+        tags=[]
         def __init__(self, jop_API, id_note):
             """ Get the note."""
             #if id_note=='': raise Exception('Please provide the note\'s id.')
@@ -175,7 +178,6 @@ class Joplin:
 
         def push(self):
             """Pushes the notes update(s) to the Joplin API."""
-            #TODO : update tags
             data={}
             for key in note_props:
                 data[key] = self.__dict__[key]
@@ -186,12 +188,15 @@ class Joplin:
                 data['parent_id'] = self.parent_notebook.id
 
             self.API.put_item('notes', self.id, data) 
+            for tag in self.get_tags():#remove the old tags:
+                self.API.delete_item('tags', item_id=tag.id, subitem_type='notes', subitem_id=self.id)
+            for tag in self.tags: #set the new tags
+                self.API.post_item('tags', item_id=tag.id, subitem_type='notes', data={'id': self.id})
             if self.API.verbose: print('Updated note', self.id)
 
         def delete(self):
             """Deletes the note."""
             self.API.delete_item('notes', self.id)
-
 
         def get_tags(self):
             """ Get tags associated with a note.
@@ -211,6 +216,12 @@ class Joplin:
             self.body += '['+att.title+'](:/'+att.id+')'
             return(att.id)
 
+        def add_tag_by_title(self, title, create_if_needed=False):
+            """Adds a tag to the Note."""
+            tag = self.API.get_tag_by_title(title, create_if_needed=create_if_needed)
+            self.tags.append(tag)
+            self.push()
+        
 
     def get_notebook(self, id_notebook):
         """Get a notebook from its id.
@@ -329,6 +340,30 @@ class Joplin:
         Returns a Joplin.Tag object."""
         return(self.Tag(self, id_tag))
 
+    def get_tag_by_title(self, title, create_if_needed=False):
+        """Finds a tag by its title.
+        If create_if_needed is True, will create it if it does not exist.
+        """
+        search_res = self.search_tags(title)
+        if len(search_res) > 1:
+            raise Exception('Several notes with that title.')
+        elif len(search_res)==0 and create_if_needed:
+            new_tag = self.new_tag(title)
+            new_tag.__setattr__('title', title, push=False)
+            new_tag.push()
+            return(new_tag)
+        elif len(search_res)==1:
+            return(search_res[0])
+        else:
+            raise Exception('No tag by that title.')
+
+    def new_tag(self, title):
+        """
+        * title : the Tag's title
+        """
+        id_tag = self.post_item('tags', data={'title':title})
+        return(self.Tag(self, id_tag))
+
     def search_tags(self, search_string):
         """
         Returns a list of Joplin.Tag objects."""
@@ -338,12 +373,33 @@ class Joplin:
     class Tag:
         def __init__(self, jop_API, id_tag):
             """ Get the tag."""
-            #TODO : create it if no id is given.
+            self.API = jop_API
+            self.id = id_tag
             if id_tag=='': raise Exception('Please provide the tag\'s id.')
-            tag_json = jop_API.get_item('tags', id_tag, ['id', 'parent_id', 'title'])
-            self.id = tag_json['id']
-            self.parent_id = tag_json['parent_id']
-            self.title = tag_json['title']
+            self.pull()
+
+        def __setattr__(self, key, value, push=True):
+            """Will only auto-push if Joplin.auto_push is True AND push is True."""
+            self.__dict__[key] = value
+            if push and self.API.auto_push and key in tag_props: self.push()
+        def delete(self):
+            """Deletes the Tag."""
+            self.API.delete_item('tags', self.id)
+
+        def pull(self):
+            """Pulls the tags's update(s) from the Joplin API."""
+            tag_json = self.API.get_item('tags', self.id, tag_props)
+            for key in tag_json.keys(): #set the attributes : 
+                self.__dict__[key] = tag_json[key]
+
+        def push(self):
+            """Pushes the tag update(s) to the Joplin API."""
+            data={}
+            for key in tag_props:
+                data[key] = self.__dict__[key]
+
+            self.API.put_item('tags', self.id, data) 
+            if self.API.verbose: print('Updated tag', self.id)
 
         def get_notes(self):
             """ Get a list of all notes associated with that tag.
@@ -437,7 +493,7 @@ class Joplin:
             raise Exception('Could not connect to API. Please check that the host/port/key is correct.')
         return(r.json())
 
-    def post_item(self, item_type, data={'title':'Untitled', 'parent_id':'', 'source':'python_joplin', 'source_application':'com.S73ph4n.python_joplin'}, file=None):
+    def post_item(self, item_type, data={'title':'Untitled', 'parent_id':'', 'source':'python_joplin', 'source_application':'com.S73ph4n.python_joplin'}, file=None, item_id='', subitem_type=''):
         """ Creates an item (note, folder, etc.) using Joplin's REST API.
         Ex.: 
             * To create a note : put_item('notes')
@@ -446,6 +502,8 @@ class Joplin:
         #TODO : add removal of forbidden characters
         #Make base url :
         url = 'http://'+self.API_host+':'+str(self.API_port)+'/'+item_type
+        if item_id != '': url += '/'+item_id
+        if subitem_type != '': url += '/'+subitem_type
         #Append parameters :
         url += '?token='+self.API_key
 
@@ -464,13 +522,15 @@ class Joplin:
             raise Exception('Could not connect to API. Please check that the host/port/key is correct.')
         return(r.json()['id'])
 
-    def delete_item(self, item_type, item_id):
+    def delete_item(self, item_type, item_id, subitem_type='', subitem_id=''):
         """ Delete a item (note, folder, etc.) using Joplin's REST API.
         Ex.: 
             * To delete a note : delete_item('notes','a1b2c3...')
         """
         #Make base url :
         url = 'http://'+self.API_host+':'+str(self.API_port)+'/'+item_type+'/'+item_id
+        if subitem_type != '': url += '/'+subitem_type
+        if subitem_id != '': url += '/'+subitem_id
         #Append parameters :
         url += '?token='+self.API_key
 

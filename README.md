@@ -20,7 +20,7 @@ Connecting to the API:
 (Make sure Joplin is running and the Web Clipper API is active. You can find the API key in Joplin's options.)
 ```python
 from python_joplin import Joplin
-my_jop = Joplin(key='myJoplinToken1a2b3c4...', auto_push=True) 
+my_jop = Joplin(key='myJoplinToken1a2b3c4...') 
 ```
 
 ## Examples
