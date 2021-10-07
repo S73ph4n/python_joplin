@@ -2,7 +2,7 @@ import os, click, python_joplin, time
 from python_joplin import tools
 from pyzotero import zotero
 
-confirm=True #ask before creating each note/ressource
+confirm=False #ask before creating each note/ressource
 loop=True 
 wait_time=60 #wait 60 seconds between each runs
 
