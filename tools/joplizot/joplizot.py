@@ -72,6 +72,7 @@ while True:
             #        att_jop = jop.new_ressource(att.filename, att.payload)
             #        note.body += '['+att_jop.title+'](:/'+att_jop.id+')'
             note.source = "Zotero via JopliZot"
+            note.add_tag_by_title('zotero', create_if_needed=True)
             note.push()  # Push updates to Joplin
     if not LOOP:
         break

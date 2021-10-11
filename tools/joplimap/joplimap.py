@@ -71,6 +71,7 @@ while True:
                     att_jop = jop.new_ressource(att.filename, att.payload)
                     note.body += "[" + att_jop.title + "](:/" + att_jop.id + ")"
             note.source = "Email via JoplIMAP"
+            note.add_tag_by_title('email', create_if_needed=True)
             note.push()  # Push updates to Joplin
     if not LOOP:
         break
