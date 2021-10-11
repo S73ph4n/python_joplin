@@ -2,10 +2,11 @@
 import os
 import time
 import click
+import re
 from icalendar import Calendar, Event
 import python_joplin
 from python_joplin import tools
-from datetime import datetime
+from datetime import datetime, timedelta
 
 CONFIRM = False  # ask before creating each note/ressource
 LOOP = True
@@ -16,7 +17,7 @@ ENV = {"JOPLIN_TOKEN": ""}
 
 # Date format (ISO only for now)
 date_regex = re.compile('[0-9]{4}\-[0-9]{2}\-[0-9]{2} [0-9]{2}\:[0-9]{2}') #matches dates
-date_format = "%d/%m/%Y %H:%M:%S" #for datetime.strptime
+date_format = "%Y-%m-%d %H:%M" #for datetime.strptime
 
 def get_dates(note):
     """Extract all dates related to a note.
@@ -61,7 +62,8 @@ while True:
                 event.add('summary', note.title)
                 event.add('description', note.body)
                 event.add('dtstart', note_date)
-                event.add('duration', 'P1H') #Lasts 1 hour
+                event.add('duration', timedelta(hours=1)) #Lasts 1 hour
+                #TODO : get YAML properties
                 cal.add_component(event)
 
     # Saving calendar:
