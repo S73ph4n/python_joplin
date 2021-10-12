@@ -1,4 +1,4 @@
-"""JoplIMAP.py : a script to fetch your email and continuously import it to Joplin."""
+"""JopliZot.py : a script to fetch your Zotero Web items and continuously import it to Joplin."""
 import os
 import time
 import click
@@ -11,7 +11,7 @@ LOOP = True
 WAIT_TIME = 60  # wait 60 seconds between each runs
 
 # Environment variables we need:
-ENV = {"JOPLIN_TOKEN": "", "ZOTERO_LIBRARY_ID": "", "ZOTERO_API_KEY": ""}
+ENV = {"JOPLIN_TOKEN": "", "JOPLIN_HOST":"localhost", "JOPLIN_PORT":"41184", "ZOTERO_LIBRARY_ID": "", "ZOTERO_API_KEY": "", "ZOTERO_COLLECTION_ID":""}
 
 def format_str(raw):
     """Format a string so it doesn't break the Joplin API calls (happens with some characters)."""
@@ -24,15 +24,16 @@ def format_str(raw):
 # In case the environment variables are not set, let's set them :
 for VAR_NAME in ENV.keys():
     ENV[VAR_NAME] = os.getenv(VAR_NAME)
-    if not ENV[VAR_NAME]:
-        ENV[VAR_NAME] = click.prompt("Enter your " + VAR_NAME, type=str)
-    else:
-        click.echo(VAR_NAME + " found in the environment.")
+    if CONFIRM:
+        if not os.getenv(VAR_NAME):
+            ENV[VAR_NAME] = click.prompt("Enter your " + VAR_NAME, type=str, default=ENV[VAR_NAME])
+        else:
+            click.echo(VAR_NAME + " found in the environment.")
 
 while True:
     # Prepare Joplin:
     click.echo("Connecting to Joplin...")
-    jop = python_joplin.Joplin(ENV["JOPLIN_TOKEN"])  # Connect to the Joplin API
+    jop = python_joplin.Joplin(ENV["JOPLIN_TOKEN"], host=ENV["JOPLIN_HOST"], port=int(ENV["JOPLIN_HOST"]))  # Connect to the Joplin API
     zot_notebook = jop.get_notebook_by_title(
         "Zotero_Items", create_if_needed=True
     )  # get the Joplin notebook we need
@@ -42,7 +43,10 @@ while True:
     click.echo("Connecting to Zotero server...")
     zot = zotero.Zotero(ENV["ZOTERO_LIBRARY_ID"], "user", ENV["ZOTERO_API_KEY"])
     click.echo("Zotero connection OK.\nFetching items...")
-    items = zot.top(limit=50)
+    if ENV["ZOTERO_COLLECTION_ID"]:
+        items = zot.everything(zot.collection_items_top(ENV["ZOTERO_COLLECTION_ID"])) #Get items from the collection
+    else:
+        items = zot.everything(zot.top()) #Get all items
     click.echo("Items fetched.")
 
     # Process the items:
@@ -64,6 +68,8 @@ while True:
             )
             for prop_name in item["data"].keys():
                 tools.set_yaml(note, prop_name, item["data"][prop_name])
+
+
             # TODO : add attachments
             # for att in msg.attachments:
             #    if not CONFIRM or click.confirm(
