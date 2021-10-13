@@ -453,7 +453,7 @@ class Joplin:
             If create_if_needed is True, will create it if it does not exist.
             """
             search_res = self.api.search_notes(
-                "title:'" + title + "' notebook:'" + self.title + "'"
+                "title:\'" + title + "\' notebook:\"" + self.title + "\""
             )
             if len(search_res) > 1:
                 raise Exception("Several notes with that title in that notebook.")
