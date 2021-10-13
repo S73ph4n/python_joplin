@@ -55,13 +55,9 @@ while True:
         if not CONFIRM or click.confirm(
             "Add message " + msg.subject + " ?", default=False
         ):
-            title = (
-                #msg.date_str + " : " + format_str(msg.subject) + " [" + msg.from_ + "]"
-                msg.date.strftime("[%Y-%m-%d %H:%M:%S]") + " " + format_str(msg.subject) + " [" + msg.from_ + "]"
-            )  # the title for our note
-            note = inbox_notebook.get_note_by_title(
-                title, create_if_needed=True
-            )  # Create note in notebook (or find it if it exists)
+            #title = msg.date_str + " : " + format_str(msg.subject) + " [" + msg.from_ + "]"
+            title =  msg.date.strftime("[%Y-%m-%d %H:%M:%S]") + " " + format_str(msg.subject) + " [" + msg.from_ + "]"
+            note = inbox_notebook.get_note_by_title(title, create_if_needed=True)  # Create note in notebook (or find it if it exists)
             if note.body != "":
                 continue  # if there's already something, let's not change it
             # note.body = markdownify.markdownify(msg.html, heading_style='ATX') #doesn't work
