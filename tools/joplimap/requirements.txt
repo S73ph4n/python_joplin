@@ -1,5 +1,6 @@
 git+https://github.com/S73ph4n/python_joplin
 requests
 click
+pyyaml
 imap_tools
 markdownify

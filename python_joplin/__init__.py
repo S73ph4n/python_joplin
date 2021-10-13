@@ -343,6 +343,9 @@ class Joplin:
         def add_tag_by_title(self, title, create_if_needed=False):
             """Adds a tag to the Note."""
             tag = self.api.get_tag_by_title(title, create_if_needed=create_if_needed)
+            for t in self.tags:
+                if tag.id == t.id: #that means it's already tagged with this
+                    return
             self.tags.append(tag)
             self.push()
 

@@ -4,6 +4,7 @@ import time
 import click
 from imap_tools import MailBox, AND  # TODO : use imaplib ?
 import python_joplin
+from python_joplin import tools
 
 CONFIRM = False  # ask before creating each note/ressource
 LOOP = True
@@ -55,7 +56,8 @@ while True:
             "Add message " + msg.subject + " ?", default=False
         ):
             title = (
-                msg.date_str + " : " + format_str(msg.subject) + " [" + msg.from_ + "]"
+                #msg.date_str + " : " + format_str(msg.subject) + " [" + msg.from_ + "]"
+                msg.date.strftime("[%Y-%m-%d %H:%M:%S]") + " " + format_str(msg.subject) + " [" + msg.from_ + "]"
             )  # the title for our note
             note = inbox_notebook.get_note_by_title(
                 title, create_if_needed=True
@@ -63,7 +65,11 @@ while True:
             if note.body != "":
                 continue  # if there's already something, let's not change it
             # note.body = markdownify.markdownify(msg.html, heading_style='ATX') #doesn't work
-            note.body = msg.text
+            tools.set_yaml(note, 'From', msg.from_)
+            tools.set_yaml(note, 'To', ','.join(msg.to))
+            tools.set_yaml(note, 'Cc', ','.join(msg.cc))
+            tools.set_yaml(note, 'Bcc', ','.join(msg.bcc))
+            note.body += msg.text
             for att in msg.attachments:
                 if not CONFIRM or click.confirm(
                     "\tAdd attachment " + att.filename + " ?", default=True
