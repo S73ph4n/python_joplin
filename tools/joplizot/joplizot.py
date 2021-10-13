@@ -5,6 +5,7 @@ import click
 from pyzotero import zotero
 import python_joplin
 from python_joplin import tools
+import re
 
 CONFIRM = False  # ask before creating each note/ressource
 LOOP = True
@@ -12,6 +13,8 @@ WAIT_TIME = 60  # wait 60 seconds between each runs
 
 # Environment variables we need:
 ENV = {"JOPLIN_TOKEN": "", "JOPLIN_HOST":"localhost", "JOPLIN_PORT":"41184", "ZOTERO_LIBRARY_ID": "", "ZOTERO_API_KEY": "", "ZOTERO_COLLECTION_ID":""}
+
+year_regex = re.compile("[0-9]{4}") 
 
 def format_str(raw):
     """Format a string so it doesn't break the Joplin API calls (happens with some characters)."""
@@ -23,20 +26,18 @@ def format_str(raw):
 
 # In case the environment variables are not set, let's set them :
 for VAR_NAME in ENV.keys():
-    ENV[VAR_NAME] = os.getenv(VAR_NAME)
-    if CONFIRM:
-        if not os.getenv(VAR_NAME):
+    if not os.getenv(VAR_NAME):
+        if CONFIRM:
             ENV[VAR_NAME] = click.prompt("Enter your " + VAR_NAME, type=str, default=ENV[VAR_NAME])
-        else:
-            click.echo(VAR_NAME + " found in the environment.")
+    else:
+        ENV[VAR_NAME] = os.getenv(VAR_NAME)
+        click.echo(VAR_NAME + " found in the environment.")
 
 while True:
     # Prepare Joplin:
     click.echo("Connecting to Joplin...")
-    jop = python_joplin.Joplin(ENV["JOPLIN_TOKEN"], host=ENV["JOPLIN_HOST"], port=int(ENV["JOPLIN_HOST"]))  # Connect to the Joplin API
-    zot_notebook = jop.get_notebook_by_title(
-        "Zotero_Items", create_if_needed=True
-    )  # get the Joplin notebook we need
+    jop = python_joplin.Joplin(ENV["JOPLIN_TOKEN"], host=ENV["JOPLIN_HOST"], port=int(ENV["JOPLIN_PORT"]))  # Connect to the Joplin API
+    zot_notebook = jop.get_notebook_by_title("Zotero_Items", create_if_needed=True)  # get the Joplin notebook we need
     click.echo("Joplin connection OK")
 
     # Prepare PyZotero:
@@ -55,7 +56,15 @@ while True:
         if not CONFIRM or click.confirm(
             "Add item " + item["data"]["title"] + " ?", default=False
         ):
-            title = format_str(item["data"]["title"])  # the title for our note
+            authors = ''
+            for crea in item["data"]["creators"]:
+                if crea["creatorType"]=="author":
+                    if authors != '': #If there's already an author
+                        authors += ' et al.'
+                        break
+                    authors += crea["lastName"] + ', ' + crea["firstName"][0] + '.'
+            date = year_regex.search(item["data"]["date"]).group()
+            title = authors + ' ' + format_str(item["data"]["title"]) + ' (' + date +')'  # the title for our note
             click.echo("Adding/updating item:" + title)
             note = zot_notebook.get_note_by_title(
                 title, create_if_needed=True

@@ -61,6 +61,7 @@ while True:
                 event = Event()
                 event.add('summary', note.title)
                 event.add('description', note.body)
+                #TODO : add Joplin share link
                 event.add('dtstart', note_date)
                 event.add('duration', timedelta(hours=1)) #Lasts 1 hour
                 #TODO : get YAML properties
