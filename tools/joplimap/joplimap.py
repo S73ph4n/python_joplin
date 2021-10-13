@@ -65,7 +65,7 @@ while True:
             tools.set_yaml(note, 'To', ','.join(msg.to))
             tools.set_yaml(note, 'Cc', ','.join(msg.cc))
             tools.set_yaml(note, 'Bcc', ','.join(msg.bcc))
-            note.body += msg.text
+            note.body += '\n'+ msg.text
             for att in msg.attachments:
                 if not CONFIRM or click.confirm(
                     "\tAdd attachment " + att.filename + " ?", default=True
