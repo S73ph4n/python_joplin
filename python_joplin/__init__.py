@@ -212,7 +212,7 @@ class Joplin:
         """Finds a note by its title.
         If create_if_needed is True, will create it if it does not exist.
         """
-        search_res = self.search_notes('title:"' + title + '"')
+        search_res = self.search_notes('title:\'' + title + '\'')
         if len(search_res) > 1:
             raise Exception("Several notes with that title.")
         if len(search_res) == 0 and create_if_needed:
@@ -448,13 +448,17 @@ class Joplin:
             notes_json = self.api.get_items("folders", self.id, subitem_type="notes")
             return [self.api.get_note(n_j["id"]) for n_j in notes_json]
 
-        def get_note_by_title(self, title, create_if_needed=False):
+        def get_note_by_title(self, title, create_if_needed=False, allow_external_results=False):
             """Finds a note by its title within a notebook.
             If create_if_needed is True, will create it if it does not exist.
+            If allow_external_results is True, will also get the note if it has been moved to another notebook.
             """
-            search_res = self.api.search_notes(
-                "title:\'" + title + "\' notebook:\"" + self.title + "\""
-            )
+            if allow_external_results:
+                search_res = self.api.search_notes("title:\'" + title + "\'")
+            else:
+                search_res = self.api.search_notes(
+                    "title:\'" + title + "\' notebook:\"" + self.title + "\""
+                )
             if len(search_res) > 1:
                 raise Exception("Several notes with that title in that notebook.")
             if len(search_res) == 0 and create_if_needed:
