@@ -713,7 +713,10 @@ class Joplin:
             raise Exception(
                 "Could not connect to API. Please check that the host/port/key is correct."
             )
-        return req.json()["id"]
+        try:
+            return req.json()["id"]
+        except Exception:
+            print('Response could not get jsonified.', req)
 
     def delete_item(self, item_type, item_id, subitem_type="", subitem_id=""):
         """Delete a item (note, folder, etc.) using Joplin's REST API.
