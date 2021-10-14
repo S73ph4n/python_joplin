@@ -1,4 +1,0 @@
-git+https://github.com/S73ph4n/python_joplin
-click
-pyzotero
-pyyaml
