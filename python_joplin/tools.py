@@ -1,5 +1,5 @@
 from datetime import datetime
-import click, yaml
+import click, yaml, re
 
 def format_date(timestamp_ms):
     """Formats a Joplin timestamp into a datetime object."""
@@ -23,11 +23,12 @@ def get_yaml(note, key):
     """
     Find a YAML property in a note.
     (Gets the first occurrence of a property.)
+    You can also pass a regex pattern matching a key.
     """
     body = note.body.split('\n')
     i = 0
     while i<len(body):
-        if body[i].startswith(key):
+        if (type(key)==str and body[i].startswith(key)) or (type(key)==re.Pattern and key.search(body[i])):
             #print(i)
             yaml_content = body[i]
             while i+1<len(body) and (body[i+1].startswith(' ') or body[i+1].startswith('\t')):
